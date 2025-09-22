@@ -28,8 +28,8 @@ class PasskeyBroker extends DatabaseBroker implements PasskeyBrokerInterface
         if (!$row) return null;
 
         // Normalize BYTEA fields which may be returned as streams/resources
-        $credIdBin = $this->byteaToString($row->credential_id ?? null);
-        $pubKeyCoseBin = $this->byteaToString($row->public_key_cose ?? null);
+        $credIdBin = Utils::byteaToString($row->credential_id ?? null);
+        $pubKeyCoseBin = Utils::byteaToString($row->public_key_cose ?? null);
 
         $transports = null;
         if (!empty($row->transports)) {
@@ -79,16 +79,5 @@ class PasskeyBroker extends DatabaseBroker implements PasskeyBrokerInterface
             $backupEligible,
             $transports
         ]);
-    }
-    private function byteaToString(mixed $v): string
-    {
-        if (is_resource($v)) {
-            $data = stream_get_contents($v);
-            return $data === false ? '' : $data;
-        }
-        if ($v instanceof \Stringable) {
-            return (string)$v;
-        }
-        return is_string($v) ? $v : '';
     }
 }

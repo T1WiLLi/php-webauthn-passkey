@@ -26,21 +26,10 @@ final readonly class Passkey
             return $row->$k ?? null;
         };
 
-        $byteaToString = static function(mixed $v): string {
-            if (is_resource($v)) {
-                $data = stream_get_contents($v);
-                return $data === false ? '' : $data;
-            }
-            if ($v instanceof \Stringable) {
-                return (string)$v;
-            }
-            return is_string($v) ? $v : '';
-        };
-
         $id = (string) $get('id');
         $userId = (int) $get('user_id');
-        $credentialId = $byteaToString($get('credential_id'));
-        $publicKeyCose = $byteaToString($get('public_key_cose'));
+        $credentialId = Utils::byteaToString('credential_id');
+        $publicKeyCose = Utils::byteaToString('public_key_cose');
         $signCount = (int) $get('sign_count');
         $backupEligible = (bool) $get('backup_eligible');
         $transports = $get('transports');

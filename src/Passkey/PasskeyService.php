@@ -200,6 +200,7 @@ final readonly class PasskeyService
     /**
      * Derives a stable 32-byte seed from the WebAuthn PRF output and the
      * credential's stored salt using HKDF (SHA-256). Returns base64url.
+     * @return string The PRF-Based Seed
      */
     public function deriveSeedFromPrf(string $credentialIdRaw, string $prfFirstB64Url): string
     {

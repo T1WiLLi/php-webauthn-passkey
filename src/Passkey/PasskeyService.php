@@ -198,6 +198,21 @@ final readonly class PasskeyService
     }
 
     /**
+     * Derives a stable 32-byte seed from the WebAuthn PRF output and the
+     * credential's stored salt using HKDF (SHA-256). Returns base64url.
+     */
+    public function deriveSeedFromPrf(string $credentialIdRaw, string $prfFirstB64Url): string
+    {
+        $passkey = $this->provider->findByCredentialId($credentialIdRaw);
+        if (!$passkey || $passkey->prf_salt === null || $passkey->prf_salt === '') {
+            throw new \RuntimeException('Passkey salt not found');
+        }
+        $prf = self::base64url_decode($prfFirstB64Url);
+        $seed = hash_hkdf('sha256', $prf, 32, 'seed:v1', $passkey->prf_salt);
+        return self::base64url_encode($seed);
+    }
+
+    /**
      * Resolves the RP ID to be used for the current request. By default, it derives the RP ID from the current HTTP
      * host, removing any port number if present.
      *
@@ -213,17 +228,6 @@ final readonly class PasskeyService
     private function deriveEvalSalt(): string
     {
         return hash('sha256', 'webauthn:prf-eval:v1|' . $this->resolveRpId(), true);
-    }
-
-    public function deriveSeedFromPrf(string $credentialIdRaw, string $prfFirstB64Url): string
-    {
-        $passkey = $this->provider->findByCredentialId($credentialIdRaw);
-        if (!$passkey || $passkey->prf_salt === null || $passkey->prf_salt === '') {
-            throw new \RuntimeException('Passkey salt not found');
-        }
-        $prf = self::base64url_decode($prfFirstB64Url);
-        $seed = hash_hkdf('sha256', $prf, 32, 'seed:v1', $passkey->prf_salt);
-        return self::base64url_encode($seed);
     }
 
     private static function base64url_encode(string $bin): string
